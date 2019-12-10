@@ -58,5 +58,9 @@ bin/flume-ng agent \
 初次虚拟机中
 
 kafka ： /opt/kafka
+
 flume ： /usr/local2/flume
+
+kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
+
 别问为啥目录这么傻吊..我当时就是这么傻吊
