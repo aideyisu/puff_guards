@@ -64,3 +64,23 @@ flume ： /usr/local2/flume
 kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 
 别问为啥目录这么傻吊..我当时就是这么傻吊
+
+------
+
+简易使用:
+
+直接在engine中使用
+
+```shell
+python3 puff.py
+```
+
+开启后访问
+
+http://127.0.0.1:5000
+
+查看页面即可
+
+代办list :
+看板v2暂时无法显示数据
+
