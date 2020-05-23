@@ -138,12 +138,12 @@ def hot_geo():
             redis_con = redis.Redis(connection_pool=redis_con_pool)
             res = redis_con.zrevrange("host", 0, 50, withscores=True)
             data = []
-
+            res = ['1.2.4.8', '8.8.8.8', '114.114.114.114', '139.199.188.178']
             for i in res:
                 # 调用接口获取地理坐标
                 req = requests.get("http://api.map.baidu.com/location/ip",
-                                   {'ak': '0jKbOcwqK7dGZiYIhSai5rsxTnQZ4UQt',
-                                    'ip': i[0],
+                                   {'ak': 'RNeT2wMdQiyB2lssimPBW9N2jdIL6jBt',
+                                    'ip': i,
                                     'coor': 'bd09ll'})
                 body = eval(req.text)
 
@@ -173,6 +173,8 @@ def hot_url():
             data = []
             no = 1
 
+            res = [["/", 40297], ["*", 2553]]
+
             for i in res:
                 data.append({"no": no, "url": i[0], "count": i[1]})
                 no += 1
@@ -195,11 +197,12 @@ def hot_ip():
             data = []
             no = 1
 
+            res = ['1.2.4.8', '8.8.8.8', '114.114.114.114', '139.199.188.178']
             for i in res:
                 # 调用接口获取地理坐标
                 req = requests.get("http://api.map.baidu.com/location/ip",
-                                   {'ak': '0jKbOcwqK7dGZiYIhSai5rsxTnQZ4UQt',
-                                    'ip': i[0],
+                                   {'ak': 'RNeT2wMdQiyB2lssimPBW9N2jdIL6jBt',
+                                    'ip': i,
                                     'coor': 'bd09ll'})
                 body = eval(req.text)
 
@@ -229,6 +232,8 @@ def status_code_pie():
             data = []
             legend = []
 
+            res = [['200', 201], ['404', 405], ['405', 406], ['202', 203], ['304', 305]]
+
             for i in res:
                 if i[0] != 'foo':
                     data.append({"value": i[1], "name": i[0]})
@@ -251,6 +256,9 @@ def req_method_pie():
             res = redis_con.zrevrange("reqmt", 0, 100, withscores=True)
             data = []
             legend = []
+
+            res = [['GET', 201], ['POST', 405], [
+                'OPTIONS', 406], ['-', 203], ['HEAD', 305]]
 
             for i in res:
                 if i[0] != 'foo':
@@ -276,11 +284,12 @@ def req_count_timeline():
             data = []
             date = []
 
+            res = [time.time(), time.time()]
             # 按时间排序
             for i in sorted(res):
                 datetime = time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime(int(i) / 1000))
-                data.append(res[i])
+                data.append(1000)
                 date.append(datetime)
 
             socketio.emit('req_count_timeline',
@@ -300,6 +309,8 @@ def timestamp_count_timeline():
             res = redis_con.zrevrange("host", 0, 50, withscores=True)
             ip = []
             count = []
+
+            res = [['1.2.3.4', 1000], ['8.8.8.8', 888], ['114.114.114.114', 1144]]
 
             for i in res:
                 ip.append(i[0])
@@ -324,7 +335,10 @@ def bad_count():
         while True:
             socketio.sleep(time_interval)
             redis_con = redis.Redis(connection_pool=redis_con_pool)
-            res = int(redis_con.zscore("bad", "bad"))
+            if redis_con.zscore("bad", "bad"):
+                res = int(redis_con.zscore("bad", "bad"))
+            else:
+                res = 99999
 
             socketio.emit('bad_count',
                           {"data": res},
@@ -340,7 +354,10 @@ def bad_count():
         while True:
             socketio.sleep(time_interval)
             redis_con = redis.Redis(connection_pool=redis_con_pool)
-            res = int(redis_con.zscore("good", "good"))
+            if redis_con.zscore("good", "good"):
+                res = int(redis_con.zscore("good", "good"))
+            else:
+                res = 11111
 
             socketio.emit('good_count',
                           {"data": res},
@@ -357,16 +374,19 @@ def good_geo():
             socketio.sleep(time_interval)
             # consumer = KafkaConsumer(
             #     "good_result", bootstrap_servers=kafka_bootstrap_servers)
-            consumer = [{'host': b'1.2.4.8'}, {'host': b'139.199.188.178'}]
+            consumer = [[{'host': '1.2.4.8', 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
+            )}, {'host': '139.199.188.178', 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
+
             data = []
 
             for msg in consumer:
-                result = ast.literal_eval(bytes.decode(msg.value))
+                # result = ast.literal_eval(bytes.decode(msg.value))
+                result = msg
                 for record in result:
                     if record['host'] != "foo":
                         # 调用接口获取地理坐标
                         req = requests.get("http://api.map.baidu.com/location/ip",
-                                           {'ak': '0jKbOcwqK7dGZiYIhSai5rsxTnQZ4UQt',
+                                           {'ak': 'RNeT2wMdQiyB2lssimPBW9N2jdIL6jBt',
                                             'ip': record['host'],
                                             'coor': 'bd09ll'})
                         body = eval(req.text)
@@ -398,16 +418,19 @@ def bad_geo():
             socketio.sleep(time_interval)
             # consumer = KafkaConsumer(
             #     "bad_result", bootstrap_servers=kafka_bootstrap_servers)
-            consumer = [{'host': b'1.2.4.8'}, {'host': b'139.199.188.178'}]
+            consumer = [[{'host': '1.2.4.8', 'status_code':200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
+            )}, {'host': '139.199.188.178', 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
+
             data = []
 
             for msg in consumer:
-                result = ast.literal_eval(bytes.decode(msg.value))
+                result = msg
+                # result = ast.literal_eval(bytes.decode(msg))
                 for record in result:
                     if record['host'] != "foo":
                         # 调用接口获取地理坐标
                         req = requests.get("http://api.map.baidu.com/location/ip",
-                                           {'ak': '0jKbOcwqK7dGZiYIhSai5rsxTnQZ4UQt',
+                                           {'ak': 'RNeT2wMdQiyB2lssimPBW9N2jdIL6jBt',
                                             'ip': record['host'],
                                             'coor': 'bd09ll'})
                         body = eval(req.text)
@@ -443,6 +466,8 @@ def url_cate_count_timeline():
             bad_res = dict(redis_con.zrange(
                 "badts", 0, 10000000, withscores=True))
 
+            good_res = [time.time(), time.time()]
+            bad_res = [time.time(), time.time()]
             # 求正常和异常结果的时间戳的并集，并排序。再生成对应的正常和异常计数
             date = []
             date_ts = []
@@ -462,11 +487,13 @@ def url_cate_count_timeline():
             # 生成对应的计数
             for t in date_ts:
                 if t in good_res:
-                    good_data.append(good_res[t])
+                    # good_data.append(good_res[t])
+                    good_data.append(t)
                 else:
                     good_data.append(0)
                 if t in bad_res:
-                    bad_data.append(bad_res[t])
+                    # bad_data.append(bad_res[t])
+                    bad_data.append(t)
                 else:
                     bad_data.append(0)
             # 时间戳转字符串
@@ -490,16 +517,19 @@ def bad_detail():
             socketio.sleep(time_interval)
             # consumer = KafkaConsumer(
             #     "bad_result", bootstrap_servers=kafka_bootstrap_servers)
-            consumer = []
+            consumer = [[{'host': '1.2.4.8', 'prediction': '大好人', 'probability': 80,  'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
+            )}, {'host': '139.199.188.178', 'prediction': '小好人', 'probability': 90, 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
+
             data = []
 
             for msg in consumer:
-                result = ast.literal_eval(bytes.decode(msg.value))
+                result = msg
+                # result = ast.literal_eval(bytes.decode(msg.value))
                 for record in result:
                     if record['host'] != "foo":
                         # 调用接口获取地理坐标
                         req = requests.get("http://api.map.baidu.com/location/ip",
-                                           {'ak': '0jKbOcwqK7dGZiYIhSai5rsxTnQZ4UQt',
+                                           {'ak': 'RNeT2wMdQiyB2lssimPBW9N2jdIL6jBt',
                                             'ip': record['host'],
                                             'coor': 'bd09ll'})
                         body = eval(req.text)
@@ -513,7 +543,7 @@ def bad_detail():
                             data.append({"host": record['host'], "address": address, "url": record['url'],
                                          "datetime": datetime, "req_method": record['req_method'],
                                          "protocol": record['protocol'], "status_code": record['status_code'],
-                                         "pred": record['prediction'], 'prob': record['probability']['values']})
+                                         "pred": record['prediction'], 'prob': record['probability']})
 
                             socketio.emit('bad_detail',
                                           {"data": data},
@@ -529,16 +559,19 @@ def good_detail():
             socketio.sleep(time_interval)
             # consumer = KafkaConsumer(
             #     "good_result", bootstrap_servers=kafka_bootstrap_servers)
-            consumer = []
+            consumer = [[{'host': '1.2.4.8', 'prediction': '大坏蛋', 'probability': 80,  'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
+            )}, {'host': '139.199.188.178', 'prediction': '小坏蛋', 'probability': 90, 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
+
             data = []
 
             for msg in consumer:
-                result = ast.literal_eval(bytes.decode(msg.value))
+                result = msg
+                # result = ast.literal_eval(bytes.decode(msg.value))
                 for record in result:
                     if record['host'] != "foo":
                         # 调用接口获取地理坐标
                         req = requests.get("http://api.map.baidu.com/location/ip",
-                                           {'ak': '0jKbOcwqK7dGZiYIhSai5rsxTnQZ4UQt',
+                                           {'ak': 'RNeT2wMdQiyB2lssimPBW9N2jdIL6jBt',
                                             'ip': record['host'],
                                             'coor': 'bd09ll'})
                         body = eval(req.text)
@@ -552,7 +585,7 @@ def good_detail():
                             data.append({"host": record['host'], "address": address, "url": record['url'],
                                          "datetime": datetime, "req_method": record['req_method'],
                                          "protocol": record['protocol'], "status_code": record['status_code'],
-                                         "pred": record['prediction'], 'prob': record['probability']['values']})
+                                         "pred": record['prediction'], 'prob': record['probability']})
 
                             socketio.emit('good_detail',
                                           {"data": data},
