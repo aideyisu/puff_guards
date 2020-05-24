@@ -59,7 +59,7 @@ def log_stream():
         cache = ""
         for msg in consumer:
             cache += bytes.decode(msg) + "\n"
-            if len(cache.split("\n")) == 2:
+            if len(cache.split("\n")) > 2:
                 socketio.emit('log_stream',
                               {'data': cache},
                               namespace='/log_stream')
