@@ -5,6 +5,7 @@ import time
 # from kafka import KafkaConsumer
 import redis
 import requests
+import File_security
 
 from threading import Lock, Thread
 from flask import Flask, render_template, session, request
@@ -591,6 +592,85 @@ def good_detail():
                                           {"data": data},
                                           namespace='/good_detail')
     socketio.start_background_task(target=loop)
+
+
+# 实时文件数量增减变化
+@socketio.on('connect', namespace='/file_num_change')
+def sink_file_num_change(self):
+    #i_n_datetime_count = KafkaConsumer("logv-intrusion-normal-datetime-count",
+    #                                   bootstrap_servers=self.kafka_connection)
+    redis_connection = redis.Redis(
+        host=self.redis_host, port=self.redis_port, db=0)
+    while True:
+        timestamp = time.time()
+        redis_connection.zincrby(
+            "count-file-add-datetime", random.randint(1, 20), timestamp)
+        redis_connection.zincrby(
+            "count-file-sub-datetime", random.randint(1, 20), timestamp)
+
+        add_file_datetime_count_raw = redis_connection.zrange(
+            "count-file-add-datetime", 0, -1, withscores=True)
+        sub_file_datetime_count_raw = redis_connection.zrange(
+            "count-file-sub-datetime", 0, -1, withscores=True)
+        for i in intrusion_datetime_count_raw:
+            intrusion_container.update({bytes.decode(i[0]): int(i[1])})
+        for i in normal_datetime_count_raw:
+            normal_container.update({bytes.decode(i[0]): int(i[1])})
+
+        for i in sorted(file_add_container):
+            # Or file_sub_container, they're all the same.
+            file_add_count.append(file_add_container[i])
+            file_sub_count.append(file_sub_container[i])
+            file_datetime_add_sub_sorted.append(time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(int(float(i)))))
+
+        socketio.emit(
+            'file_num_change',
+            {'file_add_count': file_add_count,
+             'file_sub_count': file_sub_count,
+             'file_datetime_add_sub_sorted': file_datetime_add_sub_sorted},
+            namespace='/file_num_change'
+        )
+
+
+@socketio.on('connect', namespace='/file_size_change')
+def sink_file_size_change(self):
+    #datetime = KafkaConsumer("logv-count-datetime", bootstrap_servers=self.kafka_connection)
+    redis_connection = redis.Redis(
+        host=self.redis_host, port=self.redis_port, db=0)
+    while True:
+        redis_connection.zincrby(
+            "count-file-size-change", random.randint(1, 2000), time.time())
+        #print("[SINKER_datetime] " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        filesize_datetime_raw = redis_connection.zrange("count-file-size-change", 0, -1, withscores=True)
+        # Filesize change timeline board
+        container = {}
+        file_datetime_count = []
+        for i in filesize_datetime_raw:
+            container.update({bytes.decode(i[0]): int(i[1])})
+        file_datetime_sorted = sorted(container)
+        file_datetime = []
+        for i in file_datetime_sorted:
+            file_datetime_count.append(container[i])
+            file_datetime.append(time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(int(float(i)))))
+
+        socketio.emit(
+            'file_size_change',
+            {'file_datetime': file_datetime,
+             'file_datetime_count': file_datetime_count },
+            namespace='/file_size_change'
+        )
+
+
+@app.route('/file_security')
+def file_security():
+    content = File_security.read_safe_content()
+    return render_template('file_security.html', num=content['file_num'],
+                           size=content['file_size'], file_list=content['file_list'],
+                           last_modify_time=content['last_modify_time'],
+                           first=len(content['first']), second=len(content['second']), other=len(content['other']),
+                           async_mode=socketio.async_mode)
 
 
 @app.route('/about')
