@@ -3,8 +3,10 @@
 import ast
 import time
 # from kafka import KafkaConsumer
+import random
 import redis
 import requests
+
 import File_security
 
 from threading import Lock, Thread
@@ -20,7 +22,7 @@ thread = None
 thread_lock = Lock()
 
 # 配置项目
-time_interval = 1
+time_interval = 10
 kafka_bootstrap_servers = "10.0.0.222:9092"
 redis_con_pool = redis.ConnectionPool(
     host='127.0.0.1', port=6379, decode_responses=True)
@@ -31,6 +33,7 @@ redis_con_pool = redis.ConnectionPool(
 @socketio.on('connect', namespace='/sys_time')
 def sys_time():
     def loop():
+        redis_connection = redis.Redis(connection_pool=redis_con_pool)
         while True:
             socketio.sleep(time_interval)
             current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -595,49 +598,65 @@ def good_detail():
 
 
 # 实时文件数量增减变化
-@socketio.on('connect', namespace='/file_num_change')
-def sink_file_num_change(self):
+@socketio.on('connect', namespace='/file_size_change')
+def file_size_change():
     #i_n_datetime_count = KafkaConsumer("logv-intrusion-normal-datetime-count",
     #                                   bootstrap_servers=self.kafka_connection)
-    redis_connection = redis.Redis(
-        host=self.redis_host, port=self.redis_port, db=0)
+    redis_connection = redis.Redis(connection_pool=redis_con_pool)
+    K = 99
     while True:
-        timestamp = time.time()
-        redis_connection.zincrby(
-            "count-file-add-datetime", random.randint(1, 20), timestamp)
-        redis_connection.zincrby(
-            "count-file-sub-datetime", random.randint(1, 20), timestamp)
+        socketio.sleep(time_interval)
+        timestamp = str(time.time())
+        K += 1
+        if K == 100:
+            redis_connection.zincrby(
+                "count-file-add-datetime", random.randint(1, 20), timestamp)
+            redis_connection.zincrby(
+                "count-file-sub-datetime", random.randint(1, 20), timestamp)
+            K = 0
+            print(K)
+        else:
+            continue
+
 
         add_file_datetime_count_raw = redis_connection.zrange(
             "count-file-add-datetime", 0, -1, withscores=True)
         sub_file_datetime_count_raw = redis_connection.zrange(
             "count-file-sub-datetime", 0, -1, withscores=True)
-        for i in intrusion_datetime_count_raw:
-            intrusion_container.update({bytes.decode(i[0]): int(i[1])})
-        for i in normal_datetime_count_raw:
-            normal_container.update({bytes.decode(i[0]): int(i[1])})
 
+        # Intrusion & Normal datetime statistics
+        file_add_container = {}
+        file_sub_container = {}
+        file_add_count = []
+        file_sub_count = []
+        file_datetime_add_sub_sorted = []
+
+        for i in add_file_datetime_count_raw:
+            file_add_container.update({(i[0]): int(i[1])})
+        for i in sub_file_datetime_count_raw:
+            file_sub_container.update({(i[0]): int(i[1])})
         for i in sorted(file_add_container):
             # Or file_sub_container, they're all the same.
-            file_add_count.append(file_add_container[i])
-            file_sub_count.append(file_sub_container[i])
+            if i in file_add_container:
+                file_add_count.append(file_add_container[i])
+            if i in file_sub_container:
+                file_sub_count.append(file_sub_container[i])
             file_datetime_add_sub_sorted.append(time.strftime(
                 "%Y-%m-%d %H:%M:%S", time.localtime(int(float(i)))))
 
         socketio.emit(
-            'file_num_change',
+            'file_size_change',
             {'file_add_count': file_add_count,
              'file_sub_count': file_sub_count,
              'file_datetime_add_sub_sorted': file_datetime_add_sub_sorted},
-            namespace='/file_num_change'
+            namespace='/file_size_change'
         )
 
 
-@socketio.on('connect', namespace='/file_size_change')
-def sink_file_size_change(self):
+@socketio.on('connect', namespace='/file_num_change')
+def file_num_change():
     #datetime = KafkaConsumer("logv-count-datetime", bootstrap_servers=self.kafka_connection)
-    redis_connection = redis.Redis(
-        host=self.redis_host, port=self.redis_port, db=0)
+    redis_connection = redis.Redis(connection_pool=redis_con_pool)
     while True:
         redis_connection.zincrby(
             "count-file-size-change", random.randint(1, 2000), time.time())
@@ -656,10 +675,10 @@ def sink_file_size_change(self):
                 "%Y-%m-%d %H:%M:%S", time.localtime(int(float(i)))))
 
         socketio.emit(
-            'file_size_change',
+            'file_num_change',
             {'file_datetime': file_datetime,
              'file_datetime_count': file_datetime_count },
-            namespace='/file_size_change'
+            namespace='/file_num_change'
         )
 
 

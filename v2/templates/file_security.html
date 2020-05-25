@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LogVision-日志分析</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/css/styles.css" rel="stylesheet">
+
+    <script type="text/javascript" src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+    <script type="text/javascript" src="../static/js/echarts/echarts.js"></script>
+    <script type="text/javascript" src="../static/js/echarts/map/js/china.js"></script>
+    <script type="text/javascript" src="../static/js/echarts/map/js/world.js"></script>
+    <script type="text/javascript" src="../static/js//echarts/extension/dataTool.js"></script>
+    <script type="text/javascript" src="../static/js/echarts/extension/bmap.js"></script>
+    <script type="text/javascript"
+        src="https://api.map.baidu.com/api?v=2.0&amp;ak=KOmVjPVUAey1G2E8zNhPiuQ6QiEmAwZu&amp;__ec_v__=20190126"></script>
+    <script type="text/javascript"
+        src="https://api.map.baidu.com/getscript?v=2.0&amp;ak=KOmVjPVUAey1G2E8zNhPiuQ6QiEmAwZu&amp;services=&amp;t=20200327103013"></script>
+
+</head>
+
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <!-- Logo -->
+                    <div class="logo">
+                        <h1><a href="index.html">实时日志分析与入侵检测系统</a></h1>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="page-content">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="sidebar content-box" style="display: block;">
+                    <ul class="nav">
+                        <!-- Main menu -->
+                        <li><a href="welcome"><i class="glyphicon glyphicon-asterisk"></i> 欢迎</a>
+                        </li>
+
+                        <li class="current"><a href="analysis"><i class="glyphicon glyphicon-stats"></i> 实时日志分析</a>
+                        </li>
+
+                        <li><a href="id"><i class="glyphicon glyphicon-adjust"></i> 实时入侵检测</a>
+                        </li>
+
+                        <li><a href="file_security"><i class="glyphicon glyphicon-hdd"></i> 页面篡改检测</a>
+                        </li>
+
+                        <li><a href="about"><i class="glyphicon glyphicon-info-sign"></i> 关于系统</a></li>
+
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-success" role="alert">
+                            <h4 class="alert-heading">实时日志分析</h4>
+                            <p>实时日志分析功能可提供实时日志字段计数、数据图表与地理信息汇总等数据可视化展示功能，数据展示有一定延迟。</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-info" role="alert">
+                                    <h4 id="sys_time" class="alert-heading">Loading...</h4>
+                                    <p>系统时间</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        $(document).ready(function () {
+                            namespace = '/sys_time';
+                            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+                            socket.on('sys_time', function (res) {
+                                document.getElementById("sys_time").innerText = res.data;
+                            });
+                        });
+                    </script>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="content-box-header">
+                            <div class="panel-title">实时计数器</div>
+                        </div>
+                        <div class="content-box-large box-with-header">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="alert alert-dark" role="alert">
+                                        <h4 class="alert-heading">总大小</h4>
+                                        <h2 id="host_count">{{ size }}</h2>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="alert alert-dark" role="alert">
+                                        <h4 class="alert-heading">正常大小</h4>
+                                        <h2 id="success_count">{{ num }}</h2>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="alert alert-dark" role="alert">
+                                        <h4 class="alert-heading">末次修改</h4>
+                                        <h4 id="other_count">{{ last_modify_time }}</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="alert alert-dark" role="alert">
+                                        <h4 class="alert-heading">首层文件</h4>
+                                        <h2 id="visitor_count">{{ first }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="alert alert-dark" role="alert">
+                                        <h4 class="alert-heading">次层文件</h4>
+                                        <h2 id="url_count">{{ second }}</h2>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="alert alert-dark" role="alert">
+                                        <h4 class="alert-heading">其余文件</h4>
+                                        <h2 id="traffic_sum">{{ other }}</h2>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="alert alert-dark" role="alert">
+                                        <h4 class="alert-heading">日志大小 (MB)</h4>
+                                        <h2 id="log_size">1234</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="content-box-header">
+                            <div class="panel-title">左侧看板</div>
+                        </div>
+                    
+                        <div class="content-box-large box-with-header">
+                            <h2 id="intrusion_count" class="card-title"> 概况面板</h2>
+                            <p class="card-text">通过数据统计与图表展示数据情况</p>
+                        </div>
+                        <div class="content-box-header">
+                            <div class="panel-title">下方看板</div>
+                        </div>
+                        <div class="content-box-large box-with-header">
+                            <h1 id="normal_count" class="card-title"> 文件变化图表</h1>
+                            <p class="card-text">可以通过下方图表查看历史变化情况</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="content-box-header">
+                            <div class="panel-title">
+                                实时文件大小
+                            </div>
+                        </div>
+                        <div class="content-box-large box-with-header">
+                            <div class="row">
+                                <div class="container-fluid">
+                                    <div id="file_size_line" style="height: 350px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <script>
+                        // Malicious/Normal  board init
+                        var file_size_line = echarts.init(document.getElementById('file_size_line'));
+
+                        file_size_line.showLoading();
+                        file_size_line.setOption({
+                            grid: {
+                                bottom: 80
+                            },
+                            tooltip: {
+                                trigger: 'axis',
+                                axisPointer: {
+                                    type: 'cross',
+                                    animation: false,
+                                    label: {
+                                        backgroundColor: '#505765'
+                                    }
+                                }
+                            },
+                            legend: {
+                                data: ['Potential Threats', 'Potential Normal'],
+                                x: 'center'
+                            },
+                            dataZoom: [
+                                {
+                                    show: true,
+                                    realtime: true,
+                                    start: 65,
+                                    end: 85
+                                },
+                                {
+                                    type: 'inside',
+                                    realtime: true,
+                                    start: 65,
+                                    end: 85
+                                }
+                            ],
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    axisLine: { onZero: false },
+                                    data: []
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    name: 'Potential Threats',
+                                    type: 'value',
+                                    max: 50
+                                },
+                                {
+                                    name: 'Potential Normal',
+                                    nameLocation: 'start',
+                                    max: 50,
+                                    type: 'value',
+                                    inverse: true
+                                }
+                            ],
+                            series: [
+                                {
+                                    name: 'Potential Threats',
+                                    type: 'line',
+                                    animation: false,
+                                    areaStyle: {},
+                                    lineStyle: {
+                                        width: 1
+                                    },
+                                    data: []
+                                },
+                                {
+                                    name: 'Potential Normal',
+                                    type: 'line',
+                                    yAxisIndex: 1,
+                                    animation: false,
+                                    areaStyle: {},
+                                    lineStyle: {
+                                        width: 1
+                                    },
+                                    data: []
+                                }
+                            ]
+                        });
+                        window.onresize = function () {
+                                file_size_line.resize();
+                            }
+                        $(document).ready(function () {
+                                namespace = '/file_size_change';
+                                var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+                                socket.on('file_size_change', function (res) {
+                                    file_size_line.hideLoading();
+                                    file_size_line.setOption({
+                                        xAxis: [
+                                            {
+                                                data: res.file_datetime_add_sub_sorted
+                                            }
+                                        ],
+                                        series: [
+                                            {
+                                                data: res.file_add_count
+                                            },
+                                            {
+                                                data: res.file_sub_count
+                                            }
+                                        ]
+                                    });
+                                });
+                            });
+                    </script>
+
+                
+
+            </div>
+        </div>
+
+        <footer>
+            <div class="container">
+
+                <div class="copy text-center">
+                    实时日志分析与入侵检测系统 仅供大创研究之用<br> <a href='https://www.github.com/aideyisu/puff_guards'>aiddyisu/puff_guards</a>
+                </div>
+
+            </div>
+        </footer>
+
+        <script type="text/javascript">
+
+            // 准备图表
+
+            // 自适应
+
+
+            // ws数据接口
+
+        </script>
+
+</body>
+
+</html>
