@@ -703,4 +703,5 @@ def about():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    File_security.set_safe_content() # 设置文件安全状态
+    socketio.run(app, host="127.0.0.1", port=5000, debug=True)
