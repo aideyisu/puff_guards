@@ -176,99 +176,217 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                    <script>
-                        // Malicious/Normal  board init
-                        var file_size_line = echarts.init(document.getElementById('file_size_line'));
 
-                        file_size_line.showLoading();
-                        file_size_line.setOption({
-                            grid: {
-                                bottom: 80
-                            },
-                            tooltip: {
-                                trigger: 'axis',
-                                axisPointer: {
-                                    type: 'cross',
-                                    animation: false,
-                                    label: {
-                                        backgroundColor: '#505765'
+
+                        <div class="content-box-header">
+                            <div class="panel-title">实时文件数量</div>
+                        </div>
+                        <div class="content-box-large box-with-header">
+                            <div class="container-fluid">
+                                <div id="malicious_line" style="height: 355px;"></div>
+                            </div>
+                        </div>
+                        <script type="text/javascript ">
+
+                            // Malicious/Normal  board init
+                            var malicious_line = echarts.init(document.getElementById('malicious_line'));
+                            malicious_line.showLoading();
+                            malicious_line.setOption({
+                                grid: {
+                                    bottom: 80
+                                },
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        type: 'cross',
+                                        animation: false,
+                                        label: {
+                                            backgroundColor: '#505765'
+                                        }
                                     }
-                                }
-                            },
-                            legend: {
-                                data: ['Potential Threats', 'Potential Normal'],
-                                x: 'center'
-                            },
-                            dataZoom: [
-                                {
-                                    show: true,
-                                    realtime: true,
-                                    start: 65,
-                                    end: 85
                                 },
-                                {
-                                    type: 'inside',
-                                    realtime: true,
-                                    start: 65,
-                                    end: 85
-                                }
-                            ],
-                            xAxis: [
-                                {
-                                    type: 'category',
-                                    boundaryGap: false,
-                                    axisLine: { onZero: false },
-                                    data: []
-                                }
-                            ],
-                            yAxis: [
-                                {
-                                    name: 'Potential Threats',
-                                    type: 'value',
-                                    max: 50
+                                legend: {
+                                    data: ['Potential Threats', 'Potential Normal'],
+                                    x: 'center'
                                 },
-                                {
-                                    name: 'Potential Normal',
-                                    nameLocation: 'start',
-                                    max: 50,
-                                    type: 'value',
-                                    inverse: true
-                                }
-                            ],
-                            series: [
-                                {
-                                    name: 'Potential Threats',
-                                    type: 'line',
-                                    animation: false,
-                                    areaStyle: {},
-                                    lineStyle: {
-                                        width: 1
+                                dataZoom: [
+                                    {
+                                        show: true,
+                                        realtime: true,
+                                        start: 65,
+                                        end: 85
                                     },
-                                    data: []
-                                },
-                                {
-                                    name: 'Potential Normal',
-                                    type: 'line',
-                                    yAxisIndex: 1,
-                                    animation: false,
-                                    areaStyle: {},
-                                    lineStyle: {
-                                        width: 1
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 65,
+                                        end: 85
+                                    }
+                                ],
+                                xAxis: [
+                                    {
+                                        type: 'category',
+                                        boundaryGap: false,
+                                        axisLine: {onZero: false},
+                                        data: []
+                                    }
+                                ],
+                                yAxis: [
+                                    {
+                                        name: 'Potential Threats',
+                                        type: 'value',
+                                        max: 50
                                     },
-                                    data: []
-                                }
-                            ]
-                        });
-                        window.onresize = function () {
+                                    {
+                                        name: 'Potential Normal',
+                                        nameLocation: 'start',
+                                        max: 50,
+                                        type: 'value',
+                                        inverse: true
+                                    }
+                                ],
+                                series: [
+                                    {
+                                        name: 'Potential Threats',
+                                        type: 'line',
+                                        animation: false,
+                                        areaStyle: {},
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        data: []
+                                    },
+                                    {
+                                        name: 'Potential Normal',
+                                        type: 'line',
+                                        yAxisIndex: 1,
+                                        animation: false,
+                                        areaStyle: {},
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        data: []
+                                    }
+                                ]
+                            });
+
+                            // Malicious/Normal  board init
+                            var file_size_line = echarts.init(document.getElementById('file_size_line'));
+                            file_size_line.showLoading();
+                            file_size_line.setOption({
+                                grid: {
+                                    bottom: 80
+                                },
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        type: 'cross',
+                                        animation: false,
+                                        label: {
+                                            backgroundColor: '#505765'
+                                        }
+                                    }
+                                },
+                                legend: {
+                                    data: ['Potential Threats', 'Potential Normal'],
+                                    x: 'center'
+                                },
+                                dataZoom: [
+                                    {
+                                        show: true,
+                                        realtime: true,
+                                        start: 65,
+                                        end: 85
+                                    },
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 65,
+                                        end: 85
+                                    }
+                                ],
+                                xAxis: [
+                                    {
+                                        type: 'category',
+                                        boundaryGap: false,
+                                        axisLine: {onZero: false},
+                                        data: []
+                                    }
+                                ],
+                                yAxis: [
+                                    {
+                                        name: 'Potential Threats',
+                                        type: 'value',
+                                        max: 50
+                                    },
+                                    {
+                                        name: 'Potential Normal',
+                                        nameLocation: 'start',
+                                        max: 50,
+                                        type: 'value',
+                                        inverse: true
+                                    }
+                                ],
+                                series: [
+                                    {
+                                        name: 'Potential Threats',
+                                        type: 'line',
+                                        animation: false,
+                                        areaStyle: {},
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        data: []
+                                    },
+                                    {
+                                        name: 'Potential Normal',
+                                        type: 'line',
+                                        yAxisIndex: 1,
+                                        animation: false,
+                                        areaStyle: {},
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        data: []
+                                    }
+                                ]
+                            });
+
+
+                            // resize func
+                            window.onresize = function () {
+                                malicious_line.resize();
                                 file_size_line.resize();
-                            }
-                        $(document).ready(function () {
-                                namespace = '/file_size_change';
+                            };
+
+                            $(document).ready(function () {
+
+                                // For SocketIO
+                                namespace = '/FileSecurity';
                                 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
-                                socket.on('file_size_change', function (res) {
+                                socket.on('FileSecurity', function (res) {
+                                    // Malicious board  // 待定还没想好放什么
+
+
+                                    malicious_line.hideLoading();
+                                    malicious_line.setOption({
+                                        xAxis: [
+                                            {
+                                                data: res.i_n_datetime_sorted
+                                            }
+                                        ],
+                                        series: [
+                                            {
+                                                data: res.i_n_intrusion_count
+                                            },
+                                            {
+                                                data: res.i_n_normal_count
+                                            }
+                                        ]
+                                    });
+                                    
+
                                     file_size_line.hideLoading();
                                     file_size_line.setOption({
                                         xAxis: [
@@ -285,9 +403,15 @@
                                             }
                                         ]
                                     });
+
+
+
                                 });
                             });
-                    </script>
+                        </script>
+
+                    </div>
+                </div>
 
                 
 

@@ -7,6 +7,7 @@ import random
 import redis
 import requests
 
+import controller
 import File_security
 
 from threading import Lock, Thread
@@ -22,7 +23,7 @@ thread = None
 thread_lock = Lock()
 
 # 配置项目
-time_interval = 10
+time_interval = 1
 kafka_bootstrap_servers = "10.0.0.222:9092"
 redis_con_pool = redis.ConnectionPool(
     host='127.0.0.1', port=6379, decode_responses=True)
@@ -236,7 +237,8 @@ def status_code_pie():
             data = []
             legend = []
 
-            res = [['200', 201], ['404', 405], ['405', 406], ['202', 203], ['304', 305]]
+            res = [['200', 201], ['404', 405], [
+                '405', 406], ['202', 203], ['304', 305]]
 
             for i in res:
                 if i[0] != 'foo':
@@ -314,7 +316,8 @@ def timestamp_count_timeline():
             ip = []
             count = []
 
-            res = [['1.2.3.4', 1000], ['8.8.8.8', 888], ['114.114.114.114', 1144]]
+            res = [['1.2.3.4', 1000], ['8.8.8.8', 888],
+                   ['114.114.114.114', 1144]]
 
             for i in res:
                 ip.append(i[0])
@@ -422,7 +425,7 @@ def bad_geo():
             socketio.sleep(time_interval)
             # consumer = KafkaConsumer(
             #     "bad_result", bootstrap_servers=kafka_bootstrap_servers)
-            consumer = [[{'host': '1.2.4.8', 'status_code':200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
+            consumer = [[{'host': '1.2.4.8', 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
             )}, {'host': '139.199.188.178', 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
 
             data = []
@@ -517,18 +520,23 @@ def url_cate_count_timeline():
 @socketio.on('connect', namespace='/bad_detail')
 def bad_detail():
     def loop():
+        k = 0
         while True:
             socketio.sleep(time_interval)
             # consumer = KafkaConsumer(
             #     "bad_result", bootstrap_servers=kafka_bootstrap_servers)
-            consumer = [[{'host': '1.2.4.8', 'prediction': '大好人', 'probability': 80,  'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
-            )}, {'host': '139.199.188.178', 'prediction': '小好人', 'probability': 90, 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
+            if k == 0:
+                consumer = [[{'host': '1.2.4.8', 'prediction': '大好人', 'probability': 80,  'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
+                )}, {'host': '139.199.188.178', 'prediction': '小好人', 'probability': 90, 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
 
+            else:
+                consumer = [[]]
             data = []
 
             for msg in consumer:
                 result = msg
                 # result = ast.literal_eval(bytes.decode(msg.value))
+                break
                 for record in result:
                     if record['host'] != "foo":
                         # 调用接口获取地理坐标
@@ -548,9 +556,10 @@ def bad_detail():
                                          "datetime": datetime, "req_method": record['req_method'],
                                          "protocol": record['protocol'], "status_code": record['status_code'],
                                          "pred": record['prediction'], 'prob': record['probability']})
-
+                            print(k, (data))
                             socketio.emit('bad_detail',
-                                          {"data": data},
+                                          {"data": [
+                                              item for item in data if data.count(item) == 1]},
                                           namespace='/bad_detail')
     socketio.start_background_task(target=loop)
 
@@ -559,17 +568,23 @@ def bad_detail():
 @socketio.on('connect', namespace='/good_detail')
 def good_detail():
     def loop():
+        k = 1
         while True:
             socketio.sleep(time_interval)
             # consumer = KafkaConsumer(
             #     "good_result", bootstrap_servers=kafka_bootstrap_servers)
-            consumer = [[{'host': '1.2.4.8', 'prediction': '大坏蛋', 'probability': 80,  'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
-            )}, {'host': '139.199.188.178', 'prediction': '小坏蛋', 'probability': 90, 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
+            if k == 0:
+                consumer = [[{'host': '1.2.4.8', 'prediction': '大坏蛋', 'probability': 80,  'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.1.com', 'timestamp': time.time(
+                )}, {'host': '139.199.188.178', 'prediction': '小坏蛋', 'probability': 90, 'status_code': 200, 'protocol': 'HTTP', 'req_method': 'GET', 'url': 'www.2.com', 'timestamp': time.time()}]]
 
+            else:
+                consumer = [[]]
             data = []
 
             for msg in consumer:
                 result = msg
+
+                break
                 # result = ast.literal_eval(bytes.decode(msg.value))
                 for record in result:
                     if record['host'] != "foo":
@@ -592,37 +607,49 @@ def good_detail():
                                          "pred": record['prediction'], 'prob': record['probability']})
 
                             socketio.emit('good_detail',
-                                          {"data": data},
+                                          {"data": [
+                                              item for item in data if data.count(item) == 1]},
                                           namespace='/good_detail')
     socketio.start_background_task(target=loop)
 
 
-# 实时文件数量增减变化
-@socketio.on('connect', namespace='/file_size_change')
-def file_size_change():
-    #i_n_datetime_count = KafkaConsumer("logv-intrusion-normal-datetime-count",
-    #                                   bootstrap_servers=self.kafka_connection)
-    redis_connection = redis.Redis(connection_pool=redis_con_pool)
-    K = 99
+def background_thread():
+    #sinker = controller.Sinker("192.168.83.33:9092", "192.168.83.33:9092", 6379).run()
+    sinker = controller.Sinker("127.0.0.1", 6379).run()
+    count = 0
     while True:
-        socketio.sleep(time_interval)
-        timestamp = str(time.time())
-        K += 1
-        if K == 100:
-            redis_connection.zincrby(
-                "count-file-add-datetime", random.randint(1, 20), timestamp)
-            redis_connection.zincrby(
-                "count-file-sub-datetime", random.randint(1, 20), timestamp)
-            K = 0
-            print(K)
-        else:
-            continue
+        socketio.sleep(5)
+        count += 1
+        # Get data from Redis
+        # Counting board & redis data entry - sorted set
+        redis_connection = redis.Redis(host="127.0.0.1", port=6379, db=0)
 
+        intrusion_datetime_count_raw = redis_connection.zrange(
+            "count-intrusion-datetime", 0, -1, withscores=True)
+        normal_datetime_count_raw = redis_connection.zrange(
+            "count-normal-datetime", 0, -1, withscores=True)
 
         add_file_datetime_count_raw = redis_connection.zrange(
             "count-file-add-datetime", 0, -1, withscores=True)
         sub_file_datetime_count_raw = redis_connection.zrange(
             "count-file-sub-datetime", 0, -1, withscores=True)
+        # Intrusion & Normal datetime statistics
+        intrusion_container = {}
+        normal_container = {}
+        i_n_intrusion_count = []
+        i_n_normal_count = []
+        i_n_datetime_sorted = []
+        for i in intrusion_datetime_count_raw:
+            intrusion_container.update({bytes.decode(i[0]): int(i[1])})
+        for i in normal_datetime_count_raw:
+            normal_container.update({bytes.decode(i[0]): int(i[1])})
+
+        for i in sorted(intrusion_container):
+            # Or normal_container, they're all the same.
+            i_n_intrusion_count.append(intrusion_container[i])
+            i_n_normal_count.append(normal_container[i])
+            i_n_datetime_sorted.append(time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(int(float(i)))))
 
         # Intrusion & Normal datetime statistics
         file_add_container = {}
@@ -630,56 +657,34 @@ def file_size_change():
         file_add_count = []
         file_sub_count = []
         file_datetime_add_sub_sorted = []
-
         for i in add_file_datetime_count_raw:
-            file_add_container.update({(i[0]): int(i[1])})
+            file_add_container.update({bytes.decode(i[0]): int(i[1])})
         for i in sub_file_datetime_count_raw:
-            file_sub_container.update({(i[0]): int(i[1])})
+            file_sub_container.update({bytes.decode(i[0]): int(i[1])})
+
         for i in sorted(file_add_container):
             # Or file_sub_container, they're all the same.
-            if i in file_add_container:
-                file_add_count.append(file_add_container[i])
-            if i in file_sub_container:
-                file_sub_count.append(file_sub_container[i])
+            file_add_count.append(file_add_container[i])
+            file_sub_count.append(file_sub_container[i])
             file_datetime_add_sub_sorted.append(time.strftime(
                 "%Y-%m-%d %H:%M:%S", time.localtime(int(float(i)))))
 
-        socketio.emit(
-            'file_size_change',
-            {'file_add_count': file_add_count,
-             'file_sub_count': file_sub_count,
-             'file_datetime_add_sub_sorted': file_datetime_add_sub_sorted},
-            namespace='/file_size_change'
-        )
+        # SocketIO emitting
+        socketio.emit('FileSecurity',
+                      {'file_add_count': file_add_count,
+                       'file_sub_count': file_sub_count,
+                       'file_datetime_add_sub_sorted': file_datetime_add_sub_sorted,
+                       'i_n_datetime_sorted': i_n_datetime_sorted,
+                       'i_n_intrusion_count': i_n_intrusion_count,
+                       'i_n_normal_count': i_n_normal_count}, namespace='/FileSecurity')
 
 
-@socketio.on('connect', namespace='/file_num_change')
-def file_num_change():
-    #datetime = KafkaConsumer("logv-count-datetime", bootstrap_servers=self.kafka_connection)
-    redis_connection = redis.Redis(connection_pool=redis_con_pool)
-    while True:
-        redis_connection.zincrby(
-            "count-file-size-change", random.randint(1, 2000), time.time())
-        #print("[SINKER_datetime] " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-        filesize_datetime_raw = redis_connection.zrange("count-file-size-change", 0, -1, withscores=True)
-        # Filesize change timeline board
-        container = {}
-        file_datetime_count = []
-        for i in filesize_datetime_raw:
-            container.update({bytes.decode(i[0]): int(i[1])})
-        file_datetime_sorted = sorted(container)
-        file_datetime = []
-        for i in file_datetime_sorted:
-            file_datetime_count.append(container[i])
-            file_datetime.append(time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(int(float(i)))))
-
-        socketio.emit(
-            'file_num_change',
-            {'file_datetime': file_datetime,
-             'file_datetime_count': file_datetime_count },
-            namespace='/file_num_change'
-        )
+@socketio.on('connect', namespace='/FileSecurity')
+def FileSecurity():
+    global thread
+    with thread_lock:
+        if thread is None:
+            socketio.start_background_task(target=background_thread)
 
 
 @app.route('/file_security')
