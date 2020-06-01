@@ -8,20 +8,22 @@
 
 ## 项目特点 - 简易使用:
 
-直接在v2中使用
+#### 使用说明:
+
+​	直接在v2中使用
 
 ```shell
 python3 app.py
 # 开启后直接访问
 http://127.0.0.1:5000
 ```
-## 部署过程
+----
+
+## 相关配置
 
 flume配置文档 - puff_guard.conf
 
-----
-
-### Kafka相关操作：
+### Kafka相关配置：
 
 启动Kafka内置Zookeeper与Kafka服务(网上说的教程都是骗人的，啥配置也不用写)
 
@@ -84,12 +86,12 @@ kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 #### 进行中 : 
 
 ​	1 BP神经网络流量预测
+​        需要讨论流量预测的表现形式
 
 #### ToDo :
 
 ​	1 爱因斯坦计划-杀伤链 & 攻击树
-
-​	2 讨论是否需要
+​        计划主要为前端页面显示
 
 #### 已完成 : 
 
@@ -108,4 +110,60 @@ kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 4 防篡改功能前端显示
 
 ​	通过Echart展示文件数据的历史变化曲线
+
+## 项目界面介绍
+
+#### 欢迎界面
+
+![index](images/index.png)
+
+可以在欢迎界面看到系统时间，以及实时日志流
+
+#### 分析界面
+
+![analysis](images/analysis.png)
+
+日志分析界面
+
+#### 地理位置分析
+
+![site](images/site.png)
+
+在实时入侵检测界面可以实时分析IP地理位置进行攻击溯源
+
+#### 文件安全检测
+
+#### ![filesafe](images/filesafe.png)
+
+通过文件安全检测可以看出当前系统总大小，文件数量，最后一次修改时间，各层级文件数量，网络流量日志的大小
+
+#### 文件历史折线图
+
+![filelan](images/filelan.png)
+
+通过文件大小历史折线图，文件数量历史折线图展示网站修改历史
+
+
+
+## 系统架构
+
+![arch](images/arch.png)
+
+系统架构图通过由flume底层获取数据联动至flask-socket，前端ECharts数据可视化处理
+
+#### 数据流
+
+![dataflow](images/dataflow.png)
+
+#### 训练流
+
+![idsflow](images/idsflow.png)
+
+机器学习过程
+
+#### 数据样例
+
+![idoutput](images/idoutput.png)
+
+
 
