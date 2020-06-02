@@ -6,11 +6,11 @@
 
 ​	包含了日志分析,实时安全检测,文件防篡改,攻击溯源,数据可视化等功能。通过日志处理在网络中实时保护站点安全
 
-## 项目特点 - 简易使用:
+## 项目特点 - 简易使用
 
-#### 使用说明:
+#### 使用说明
 
-​	直接在v2中使用
+​	开箱即用，直接在v2目录中使用
 
 ```shell
 python3 app.py
@@ -79,6 +79,8 @@ flume ： /usr/local2/flume
 
 kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 
+另外需要自己安装好redis等相关组件，不能自己
+
 上述为各个组件位置
 
 ## 当前任务列表
@@ -123,13 +125,17 @@ kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 
 ![analysis](images/analysis.png)
 
-日志分析界面
+![analysis2](images/analysis2.png)
+
+日志分析界面，可以看出历史统计，包括哪些IP高频访问，历史流量规模等等，可以通过此列表判断历史访问请求
 
 #### 地理位置分析
 
+<img src="images/site2.png" alt="site2" style="zoom:50%;" />
+
 ![site](images/site.png)
 
-在实时入侵检测界面可以实时分析IP地理位置进行攻击溯源
+在实时入侵检测界面可以实时分析IP地理位置进行攻击溯源，同时可以显示当时访问日志流，同时对其地理位置进行溯源
 
 #### 文件安全检测
 
@@ -143,13 +149,13 @@ kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 
 通过文件大小历史折线图，文件数量历史折线图展示网站修改历史
 
-
-
 ## 系统架构
 
 ![arch](images/arch.png)
 
-系统架构图通过由flume底层获取数据联动至flask-socket，前端ECharts数据可视化处理
+系统架构图通过由flume底层获取数据联动至flask-socket，前端ECharts数据可视化处理。
+
+从flume获取日志信息，分发给kafka消息队列
 
 #### 数据流
 
@@ -165,5 +171,8 @@ kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 
 ![idoutput](images/idoutput.png)
 
+上图为数据库数据样例
 
+## 结语
 
+有任意意见还希望各位多多指出，还有很多细节需要讨论
