@@ -58,8 +58,7 @@ def welcome():
 def log_stream():
     def loop():
         socketio.sleep(time_interval)
-        # consumer = KafkaConsumer(
-        #     "raw_log", bootstrap_servers=kafka_bootstrap_servers)
+        consumer = KafkaConsumer("raw_log", bootstrap_servers=kafka_bootstrap_servers)
         consumer = [b'211.94.114.14 - - [21/Nov/2017:10:44:54 + 0800] "GET /HTTP/1.1" 200 65814',
                     b'211.94.114.14 - - [21/Nov/2017:10:44:54 + 0800] "GET /HTTP/1.1" 200 51579']
         cache = ""

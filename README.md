@@ -4,7 +4,7 @@
 
 ​	一句话描述 ： 通过Web日志分析，显示网站当前与历史状况
 
-​	整合了web日志聚合、分发、实时分析、入侵检测、数据存储与可视化的日志分析解决方案。聚合采用Apache Flume，分发采用Apache Kafka，实时处理采用Spark Streaming，入侵检测采用Spark MLlib，数据存储使用HDFS与Redis，可视化采用Flask、SocketIO、Echarts、Bootstrap。
+​	整合了web日志聚合、分发、实时分析、入侵检测、数据存储与可视化的日志分析解决方案。聚合采用Apache Flume，分发采用Apache Kafka，实时处理采用Spark Streaming，入侵检测采用Spark MLlib，数据存储使用HDFS与Redis，可视化采用Flask、SocketIO、Echarts、Bootstrap
 
 ## 项目使用
 
@@ -238,3 +238,12 @@ java log_gen /home/logv/access_log /home/logSrc 5 2
 ## 结语
 
 有任意意见还希望各位多多指出，还有很多细节需要讨论
+
+# 命令行参数含义，后续补充，当前页不是很清楚，约莫能猜出个大概
+kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic rawlog
+
+kafka-console-consumer --bootstrap-server localhost:9092 --topic rawlog --from-beginning
+
+/usr/local/Cellar/kafka/2.5.0/bin/kafka-server-stop
+
+/usr/local/Cellar/kafka/2.5.0/bin/zookeeper-server-stop
