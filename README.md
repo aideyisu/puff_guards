@@ -180,13 +180,13 @@ kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 将`datasets`文件夹中的`learning-datasets`提交如下路径：
 
 ```
-/home/logv/learning-datasets
+/home/Puff/learning-datasets
 ```
 
 将`datasets`文件夹中的`access_log`提交如下路径：
 
 ```
-/home/logv/access_log
+/home/Puff/access_log
 ```
 
 ### 入侵检测模型训练与测试
@@ -194,7 +194,7 @@ kafka-python ： /usr/local2/sca (基础的python调用生产者与消费者)
 提交`jar`包至Spark集群并执行入侵检测模型的生成与测试：
 
 ```shell
-spark-submit --class learning logvision.jar
+spark-submit --class learning Puff.jar
 ```
 
 ![idoutput](images/idoutput.png)
@@ -228,11 +228,11 @@ python3 app.py
 java log_gen [日志源] [目标文件] [每次追加的行数] [时间间隔（秒）]
 ```
 
-提交至环境，编译并运行，每2秒将`/home/logv/access_log`文件中的5行追加至`/home/logSrc`中：
+提交至环境，编译并运行，每2秒将`/home/Puff/access_log`文件中的5行追加至`/home/logSrc`中：
 
 ```shell
 javac log_gen.java
-java log_gen /home/logv/access_log /home/logSrc 5 2
+java log_gen /home/Puff/access_log /home/logSrc 5 2
 ```
 
 ## 结语
