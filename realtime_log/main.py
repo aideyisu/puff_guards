@@ -1,4 +1,7 @@
-﻿mport random
+﻿#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import random
 import linecache #读取文件并缓存文件中的所有文本
 import time
 
@@ -7,8 +10,10 @@ import time
 与日志同目录下创建log_repo文件并创建stock.log生成日志向 src.log写文件
 '''
 
-stock_log_path = "../puff/stock.log"
-target_log_path = "../puff/src.log"
+# stock_log_path = "../puff/stock.log" # 初始写法
+stock_log_path = "../datasets/access_log"
+# target_log_path = "../puff/src.log"
+target_log_path = "src.log"
 
 stock_log = linecache.getlines(stock_log_path)
 
