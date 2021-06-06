@@ -75,7 +75,7 @@ def set_safe_content(filePath=os.getcwd(), size=0):
     safe_content = {'file_num': num, 'file_size': size, 'file_list': file_list ,\
         'last_modify_time' : last_modify_time, 'first':first_Catalog_list, \
             'second': second_Catalog_list, 'other': other_Catalog_list}
-    print(safe_content)
+    # print(safe_content)
     safe_file.write(json.dumps(safe_content))
     safe_file.close()
 
