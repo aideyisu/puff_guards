@@ -2,12 +2,14 @@
 # coding=utf-8
 import ast
 import time
-# from kafka import KafkaConsumer
+from kafka import KafkaConsumer # pip3 install kafka-python
 import random
 import redis
 import requests
+import os
 
-import ai 
+# 内部调用
+# import ai # 训练模型,用不到
 import controller
 import File_security
 
@@ -24,8 +26,10 @@ thread = None
 thread_lock = Lock()
 
 # 配置项目
-time_interval = 1
-kafka_bootstrap_servers = "10.0.0.222:9092"
+# time_interval = 1
+time_interval = 10
+# kafka_bootstrap_servers = "10.0.0.222:9092"
+kafka_bootstrap_servers = "127.0.0.1:29092" # 定制kafka
 redis_con_pool = redis.ConnectionPool(
     host='127.0.0.1', port=6379, decode_responses=True)
 
@@ -52,19 +56,52 @@ def sys_time():
 def welcome():
     return render_template('index.html', async_mode=socketio.async_mode)
 
+def get_log(start_line, end_line):
+    basepath = os.path.dirname(__file__)  # 当前文件所在路径
+    data_path = f'{basepath[:-13]}\datasets\\access_log'
+
+    result = []
+    with open(data_path, "r") as file:
+        all_line = file.readlines()
+        result = all_line[start_line : end_line]
+        for item in range(len(result)):
+            result[item] = (bytes(result[item], 'ascii'))
+    
+    return result
 
 # 实时日志流
 @socketio.on('connect', namespace='/log_stream')
 def log_stream():
+    start_site = 0
     def loop():
         socketio.sleep(time_interval)
-        # consumer = KafkaConsumer("raw_log", bootstrap_servers=kafka_bootstrap_servers)
-        consumer = [b'211.94.114.14 - - [21/Nov/2017:10:44:54 + 0800] "GET /HTTP/1.1" 200 65814',
-                    b'211.94.114.14 - - [21/Nov/2017:10:44:54 + 0800] "GET /HTTP/1.1" 200 51579']
+        # 每次消费全部数据
+        consumer = KafkaConsumer("raw_log", bootstrap_servers=kafka_bootstrap_servers, auto_offset_reset='earliest')
+        
+        # consumer = [] # 准备读取日志信息并动态加载进来
+        
+        # consumer = [b'211.94.114.14 - - [21/Nov/2017:10:44:54 + 0800] "GET /HTTP/1.1" 200 65814',
+        #             b'211.94.114.15 - - [21/Nov/2017:10:44:53 + 0800] "GET /HTTP/1.1" 200 51579',]
+        
+        # consumer = [b'211.94.114.14 - - [21/Nov/2017:10:44:54 + 0800] "GET /HTTP/1.1" 200 65814',
+        #             b'211.94.114.15 - - [21/Nov/2017:10:44:53 + 0800] "GET /HTTP/1.1" 200 51579',
+        #             b'211.94.114.16 - - [21/Nov/2017:10:44:52 +0800] "GET /scripts/search.jsp?q=%"<script>alert(1332010391)</script> HTTP/1.1" 251580',
+        #             b'211.94.114.17 - - [21/Nov/2017:10:44:52 +0800] "GET /scripts/search.jsp?q=%"<script>alert(1332010391)</script> HTTP/1.1" 251580']
+        
+        # consumer = get_log(start_site, start_site + 3) # 暴力获取日志
+
         cache = ""
         for msg in consumer:
-            cache += bytes.decode(msg) + "\n"
-            if len(cache.split("\n")) > 2:
+            # print(msg.value)
+            # cache += bytes.decode(msg.value) 
+            # cache += bytes.decode(msg) 
+            # cache += bytes.decode(msg) + "\n"
+            cache += bytes.decode(msg.value) + "\n"
+            K = len(cache.split("\n"))
+            print(msg.value)
+            print(f'当前长度 {K}')
+            print(cache)
+            if len(cache.split("\n")) > 3:
                 socketio.emit('log_stream',
                               {'data': cache},
                               namespace='/log_stream')
@@ -615,7 +652,7 @@ def good_detail():
 
 def background_thread():
     #sinker = controller.Sinker("192.168.83.33:9092", "192.168.83.33:9092", 6379).run()
-    sinker = controller.Sinker("127.0.0.1", 6379).run()
+    # sinker = controller.Sinker("127.0.0.1", 6379).run()
     count = 0
     while True:
         socketio.sleep(5)
